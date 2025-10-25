@@ -1,5 +1,5 @@
 let isVisible = false;
-let tabs = 0;
+let tabs = [];
 let filteredTabs = [];
 let selectedIdx = 0;
 
@@ -38,6 +38,7 @@ async function toggleOverlay() {
     input.value = "";
     input.focus();
     renderTabs();
+    setTimeout(() => input.focus(), 50);
   } else {
     overlay.style.display = "none";
   }
@@ -64,6 +65,8 @@ function filterTabs(query) {
       (tab) => fuzzyMatch(tab.title, query) || fuzzyMatch(tab.url, query),
     );
   }
+  selectedIdx = 0;
+  renderTabs();
 }
 
 function renderTabs() {
@@ -71,9 +74,12 @@ function renderTabs() {
   filteredTabs.forEach((tab, index) => {
     const item = document.createElement("div");
     item.className = "tab-item" + (index === selectedIdx ? " selected" : "");
+    const faviconHtml = tab.favIconUrl
+      ? `<img src="${tab.favIconUrl}" class="tab-favicon" />`
+      : `<div class="tab-favicon" style="display: flex; align-items: center; justify-content: center; color: #888;">🌐</div>`;
 
     item.innerHTML = `
-        <img src="${tab.favIconUrl || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>'}" class="tab-favicon" />
+      ${faviconHtml}
         <div class="tab-info">
           <div class="tab-title">${escapeHtml(tab.title)}</div>
           <div class="tab-url">${escapeHtml(tab.url)}</div>
@@ -101,10 +107,12 @@ input.addEventListener("keydown", (e) => {
     case "ArrowDown":
       e.preventDefault();
       selectedIdx = Math.min(selectedIdx + 1, filteredTabs.length - 1);
+      renderTabs();
       break;
     case "ArrowUp":
       e.preventDefault();
       selectedIdx = Math.max(selectedIdx - 1, 0);
+      renderTabs();
       break;
     case "Enter":
       e.preventDefault();
@@ -119,7 +127,7 @@ input.addEventListener("input", (e) => {
   filterTabs(e.target.value);
 });
 
-input.addEventListener("click", (e) => {
+overlay.addEventListener("click", (e) => {
   if (e.target === overlay) {
     toggleOverlay();
   }
