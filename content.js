@@ -49,21 +49,53 @@ function fuzzyMatch(text, query) {
   query = query.toLowerCase();
 
   let queryIndex = 0;
+  let score = 0;
+  let lastMatchIdx = -1;
   for (let i = 0; i < text.length && queryIndex < query.length; i++) {
     if (text[i] === query[queryIndex]) {
+      if (i === 0 || text[i - 1] === " " || text[i - 1] === "-") {
+        score += 10;
+      }
+
+      if (lastMatchIdx === i - 1) {
+        score += 5;
+      }
+
+      score += 1;
+      lastMatchIdx = i;
       queryIndex++;
     }
   }
-  return queryIndex === query.length;
+  if (queryIndex !== query.length) {
+    return { matched: false, score: 0 };
+  }
+  if (text.startsWith(query)) {
+    score += 30;
+  }
+  if (text.includes(query)) {
+    score += 30;
+  }
+  return { matched: true, score };
 }
 
 function filterTabs(query) {
   if (!query) {
     filteredTabs = tabs;
   } else {
-    filteredTabs = tabs.filter(
-      (tab) => fuzzyMatch(tab.title, query) || fuzzyMatch(tab.url, query),
-    );
+    const scored = tabs.map((tab) => {
+      const titleMatch = fuzzyMatch(tab.title, query);
+      const urlMatch = fuzzyMatch(tab.url, query);
+
+      const titleScore = titleMatch.score * 3;
+      const urlScore = urlMatch.score * 1;
+      const bestScore = Math.max(titleScore, urlScore);
+      const matched = titleMatch.matched || urlMatch.matched;
+      return { tab, score: bestScore, matched };
+    });
+    filteredTabs = scored
+      .filter((item) => item.matched)
+      .sort((a, b) => b.score - a.score)
+      .map((item) => item.tab);
   }
   selectedIdx = 0;
   renderTabs();
@@ -87,6 +119,12 @@ function renderTabs() {
       `;
     item.addEventListener("click", () => switchToTab(tab.id));
     results.appendChild(item);
+    if (index === selectedIdx) {
+      setTimeout(
+        () => item.scrollIntoView({ block: "nearest", behavior: "smooth" }),
+        0,
+      );
+    }
   });
 }
 
@@ -95,7 +133,9 @@ function switchToTab(tabId) {
     action: "switchTab",
     tabId: tabId,
   });
-  toggleOverlay();
+  if (isVisible) {
+    toggleOverlay();
+  }
 }
 
 input.addEventListener("keydown", (e) => {
