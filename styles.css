@@ -10,7 +10,7 @@
     align-items: flex-start;
     justify-content: center;
     padding-top: 100px;
-    font-family: "Fira Mono";
+    font-family: ui-monospace, monospace;
 }
 
 .tabscope-tab-switcher-container {
