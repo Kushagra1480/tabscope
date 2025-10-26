@@ -4,13 +4,21 @@
   "version": "1.0",
   "description": "Telescope-style tab switcher",
   "permissions": ["tabs", "activeTab"],
-
+  "icons": {
+    "48": "icon.png",
+    "96": "icon.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "tabscope@gmail.com"
+    }
+  },
   "action": {
     "default_title": "Toggle Tabscope"
   },
 
   "background": {
-    "scripts": ["background.js"]
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {

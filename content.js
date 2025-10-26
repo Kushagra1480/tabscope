@@ -1,36 +1,40 @@
+const browserAPI = typeof browser !== "undefined" ? browser : chrome;
 let isVisible = false;
 let tabs = [];
 let filteredTabs = [];
 let selectedIdx = 0;
 
 const overlay = document.createElement("div");
-overlay.id = "tab-switcher-overlay";
+overlay.id = "tabscope-tab-switcher-overlay";
 overlay.innerHTML = `
-  <div>
+  <div class="tabscope-tab-switcher-container">
     <input
       type = "text"
-      id = "tab-switcher-input"
+      id = "tabscope-tab-switcher-input"
       placeholder = "search tabs..."
       autocomplete = "off"
     />
-    <div id="tab-switcher-results"></div>
+    <div id="tabscope-tab-switcher-results"></div>
   </div>
   `;
 document.body.appendChild(overlay);
 
-const input = document.getElementById("tab-switcher-input");
-const results = document.getElementById("tab-switcher-results");
+const input = document.getElementById("tabscope-tab-switcher-input");
+const results = document.getElementById("tabscope-tab-switcher-results");
 
-browser.runtime.onMessage.addListener((message) => {
+browserAPI.runtime.onMessage.addListener((message) => {
   if (message.action === "toggle") {
     toggleOverlay();
   }
 });
 
 async function toggleOverlay() {
+  console.log("Toggle called, isVisible:", isVisible);
   isVisible = !isVisible;
   if (isVisible) {
-    tabs = await browser.runtime.sendMessage({ action: "getTabs" });
+    tabs = await browserAPI.runtime.sendMessage({ action: "getTabs" });
+
+    console.log("Got tabs:", tabs.length);
     filteredTabs = tabs;
     selectedIdx = 0;
 
@@ -102,19 +106,28 @@ function filterTabs(query) {
 }
 
 function renderTabs() {
+  console.log("Rendering tabs, count:", filteredTabs.length);
   results.innerHTML = "";
+  if (filteredTabs.length === 0) {
+    console.log("No tabs to render!");
+    results.innerHTML =
+      '<div style="padding: 20px; color: white;">No tabs</div>';
+    return;
+  }
   filteredTabs.forEach((tab, index) => {
+    console.log("Rendering tab:", tab.title);
     const item = document.createElement("div");
-    item.className = "tab-item" + (index === selectedIdx ? " selected" : "");
+    item.className =
+      "tabscope-tab-item" + (index === selectedIdx ? " selected" : "");
     const faviconHtml = tab.favIconUrl
-      ? `<img src="${tab.favIconUrl}" class="tab-favicon" />`
-      : `<div class="tab-favicon" style="display: flex; align-items: center; justify-content: center; color: #888;">🌐</div>`;
+      ? `<img src="${tab.favIconUrl}" class="tabscope-tab-favicon" />`
+      : `<div class="tabscope-tab-favicon" style="display: flex; align-items: center; justify-content: center; color: #888;">🌐</div>`;
 
     item.innerHTML = `
       ${faviconHtml}
-        <div class="tab-info">
-          <div class="tab-title">${escapeHtml(tab.title)}</div>
-          <div class="tab-url">${escapeHtml(tab.url)}</div>
+        <div class="tabscope-tab-info">
+          <div class="tabscope-tab-title">${escapeHtml(tab.title)}</div>
+          <div class="tabscope-tab-url">${escapeHtml(tab.url)}</div>
         </div>
       `;
     item.addEventListener("click", () => switchToTab(tab.id));
@@ -129,19 +142,19 @@ function renderTabs() {
 }
 
 function switchToTab(tabId) {
-  browser.runtime.sendMessage({
+  overlay.style.display = "none";
+  isVisible = false;
+  browserAPI.runtime.sendMessage({
     action: "switchTab",
     tabId: tabId,
   });
-  if (isVisible) {
-    toggleOverlay();
-  }
 }
 
 input.addEventListener("keydown", (e) => {
   switch (e.key) {
     case "Escape":
       e.preventDefault();
+      e.stopPropagation();
       toggleOverlay();
       break;
     case "ArrowDown":

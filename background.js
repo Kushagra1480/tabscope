@@ -1,19 +1,23 @@
-browser.commands.onCommand.addListener((command) => {
+const browserAPI = typeof browser !== "undefined" ? browser : chrome;
+browserAPI.commands.onCommand.addListener((command) => {
   if (command === "toggle-switcher") {
-    browser.tabs
+    browserAPI.tabs
       .query({ active: true, currentWindow: true })
       .then((tabs) => {
-        browser.tabs.sendMessage(tabs[0].id, { action: "toggle" });
+        browserAPI.tabs.sendMessage(tabs[0].id, { action: "toggle" });
       })
       .catch((err) => console.error("error: " + err));
   }
 });
 
-browser.runtime.onMessage.addListener((message, sender) => {
+browserAPI.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "switchTab") {
-    browser.tabs.update(message.tabId, { active: true });
+    browserAPI.tabs.update(message.tabId, { active: true });
   }
   if (message.action === "getTabs") {
-    return browser.tabs.query({ currentWindow: true });
+    browserAPI.tabs.query({ currentWindow: true }).then((tabs) => {
+      sendResponse(tabs);
+    });
+    return true;
   }
 });
