@@ -18,6 +18,24 @@ overlay.innerHTML = `
   </div>
   `;
 document.body.appendChild(overlay);
+overlay.addEventListener(
+  "keydown",
+  (e) => {
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+  },
+  true,
+);
+
+document.addEventListener(
+  "keydown",
+  (e) => {
+    if (isVisible) {
+      e.stopPropagation();
+    }
+  },
+  true,
+);
 
 const input = document.getElementById("tabscope-tab-switcher-input");
 const results = document.getElementById("tabscope-tab-switcher-results");
@@ -42,7 +60,7 @@ async function toggleOverlay() {
     input.value = "";
     input.focus();
     renderTabs();
-    setTimeout(() => input.focus(), 50);
+    //setTimeout(() => input.focus(), 50);
   } else {
     overlay.style.display = "none";
   }
@@ -177,6 +195,7 @@ input.addEventListener("keydown", (e) => {
 });
 
 input.addEventListener("input", (e) => {
+  e.stopPropagation();
   filterTabs(e.target.value);
 });
 
