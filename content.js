@@ -9,34 +9,29 @@ overlay.id = "tabscope-tab-switcher-overlay";
 overlay.innerHTML = `
   <div class="tabscope-tab-switcher-container">
     <input
-      type = "text"
-      id = "tabscope-tab-switcher-input"
-      placeholder = "search tabs..."
-      autocomplete = "off"
+      type="text"
+      id="tabscope-tab-switcher-input"
+      placeholder="search tabs..."
+      autocomplete="off"
     />
     <div id="tabscope-tab-switcher-results"></div>
+    <div class="tabscope-shortcuts-bar">
+      <div class="tabscope-shortcut">
+        <span class="tabscope-key">↑↓</span>
+        <span class="tabscope-key-label">navigate</span>
+      </div>
+      <div class="tabscope-shortcut">
+        <span class="tabscope-key">↵</span>
+        <span class="tabscope-key-label">select</span>
+      </div>
+      <div class="tabscope-shortcut">
+        <span class="tabscope-key">ESC</span>
+        <span class="tabscope-key-label">close</span>
+      </div>
+    </div>
   </div>
-  `;
+`;
 document.body.appendChild(overlay);
-overlay.addEventListener(
-  "keydown",
-  (e) => {
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-  },
-  true,
-);
-
-document.addEventListener(
-  "keydown",
-  (e) => {
-    if (isVisible) {
-      e.stopPropagation();
-    }
-  },
-  true,
-);
-
 const input = document.getElementById("tabscope-tab-switcher-input");
 const results = document.getElementById("tabscope-tab-switcher-results");
 
@@ -172,7 +167,6 @@ input.addEventListener("keydown", (e) => {
   switch (e.key) {
     case "Escape":
       e.preventDefault();
-      e.stopPropagation();
       toggleOverlay();
       break;
     case "ArrowDown":
@@ -195,7 +189,6 @@ input.addEventListener("keydown", (e) => {
 });
 
 input.addEventListener("input", (e) => {
-  e.stopPropagation();
   filterTabs(e.target.value);
 });
 
