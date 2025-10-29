@@ -1,6 +1,8 @@
 # Tabscope
 
 Telescope-style tab switcher with fuzzy search for your browser.
+<img width="900" height="700" alt="image" src="https://github.com/user-attachments/assets/057a1090-03ba-44ac-b562-0bc1bebd3031" />
+
 
 ## Features
 
