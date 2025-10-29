@@ -163,6 +163,13 @@ function switchToTab(tabId) {
   });
 }
 
+function removeTab(tabId){
+  browserAPI.runtime.sendMessage({
+    action: "remove",
+    tabId: tabId,
+  })
+}
+
 input.addEventListener("keydown", (e) => {
   switch (e.key) {
     case "Escape":
@@ -183,6 +190,16 @@ input.addEventListener("keydown", (e) => {
       e.preventDefault();
       if (filteredTabs[selectedIdx]) {
         switchToTab(filteredTabs[selectedIdx].id);
+      }
+      break;
+    case 'd':
+      if (e.ctrlKey){
+        e.preventDefault();
+        if(filteredTabs[selectedIdx]){
+          removeTab(filteredTabs[selectedIdx].id);
+          filteredTabs.splice(selectedIdx,1);
+        }
+        renderTabs();
       }
       break;
   }

@@ -14,10 +14,13 @@ browserAPI.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "switchTab") {
     browserAPI.tabs.update(message.tabId, { active: true });
   }
-  if (message.action === "getTabs") {
+  else if (message.action === "getTabs") {
     browserAPI.tabs.query({ currentWindow: true }).then((tabs) => {
       sendResponse(tabs);
     });
     return true;
+  }
+  else if(message.action === "remove"){
+    browserAPI.tabs.remove(message.tabId);
   }
 });
