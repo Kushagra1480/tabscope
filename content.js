@@ -3,6 +3,7 @@ let isVisible = false;
 let tabs = [];
 let filteredTabs = [];
 let selectedIdx = 0;
+let prevQuery = "";
 
 const overlay = document.createElement("div");
 overlay.id = "tabscope-tab-switcher-overlay";
@@ -46,14 +47,16 @@ async function toggleOverlay() {
   isVisible = !isVisible;
   if (isVisible) {
     tabs = await browserAPI.runtime.sendMessage({ action: "getTabs" });
-
+    prevQuery = prevQuery();
+    if (prevQuery === "") {
+      filteredTabs = tabs;
+    }
     console.log("Got tabs:", tabs.length);
-    filteredTabs = tabs;
     selectedIdx = 0;
 
     overlay.style.display = "flex";
-    input.value = "";
-    input.focus();
+    input.value = prevQuery;
+    input.select();
     renderTabs();
     //setTimeout(() => input.focus(), 50);
   } else {
@@ -99,6 +102,7 @@ function filterTabs(query) {
   if (!query) {
     filteredTabs = tabs;
   } else {
+    prevQuery = query;
     const scored = tabs.map((tab) => {
       const titleMatch = fuzzyMatch(tab.title, query);
       const urlMatch = fuzzyMatch(tab.url, query);
@@ -115,7 +119,6 @@ function filterTabs(query) {
       .map((item) => item.tab);
   }
   selectedIdx = 0;
-  renderTabs();
 }
 
 function renderTabs() {
@@ -207,6 +210,7 @@ input.addEventListener("keydown", (e) => {
 
 input.addEventListener("input", (e) => {
   filterTabs(e.target.value);
+  renderTabs();
 });
 
 overlay.addEventListener("click", (e) => {
